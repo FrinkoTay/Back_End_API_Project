@@ -3,6 +3,14 @@ const {
   createRef,
   formatComments,
 } = require("../db/seeds/utils");
+const testData = require("../db/data/test-data/index")
+const db = require(`../db/connection`)
+const request = require('supertest')
+const app = require('../app')
+const seed = require('../db/seeds/seed')
+
+beforeEach(() => seed(testData))
+afterAll(() => db.end())
 
 describe("convertTimestampToDate", () => {
   test("returns a new object", () => {
@@ -102,3 +110,35 @@ describe("formatComments", () => {
     expect(formattedComments[0].created_at).toEqual(new Date(timestamp));
   });
 });
+
+describe("GET TOPICS", () => {
+  test("returns 200 status with array of topics", () => {
+    return request(app)
+      .get('/api/topics')
+      .expect(200)
+      .then((response) => {
+        expect(response.body.length).toBe(3)
+        response.body.forEach((topic) => {
+          expect(Object.keys(topic).length).toBe(2)
+          expect(typeof topic.slug).toBe('string')
+          expect(typeof topic.description).toBe('string')
+        })
+      })
+  })
+  test("return 404 error with error message if endpoint does not exist", () => {
+    return request(app)
+      .get('/api/bananas')
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Route does not exist")
+      })
+  })
+  test("return 404 error with error message if endpoint is misspelt", () => {
+    return request(app)
+      .get('/api/topicsa')
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Route does not exist")
+      })
+  })
+})
