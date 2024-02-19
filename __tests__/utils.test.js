@@ -8,6 +8,7 @@ const db = require(`../db/connection`)
 const request = require('supertest')
 const app = require('../app')
 const seed = require('../db/seeds/seed')
+const fs = require('fs/promises')
 
 beforeEach(() => seed(testData))
 afterAll(() => db.end())
@@ -139,6 +140,51 @@ describe("GET TOPICS", () => {
       .expect(404)
       .then((response) => {
         expect(response.body.msg).toBe("Route does not exist")
+      })
+  })
+})
+
+describe("GET /api", () => {
+  test("returns 200 status code with an object of three initial endpoints", () => {
+    return request(app)
+      .get('/api')
+      .expect(200)
+      .then((response) => {
+        expect(response.body['GET /api']).toEqual({
+            description: 'serves up a json representation of all the available endpoints of the api'
+        })
+        expect(response.body['GET /api/topics']).toEqual({
+          description: 'serves an array of all topics',
+          queries: [],
+          exampleResponse: { topics: [ { slug: 'football', description: 'Footie!' } ] }
+        })
+        expect(response.body['GET /api/articles']).toEqual({
+          description: 'serves an array of all articles',
+          queries: [ 'author', 'topic', 'sort_by', 'order' ],
+          exampleResponse: { articles: [
+            {
+              title: 'Seafood substitutions are increasing',
+              topic: 'cooking',
+              author: 'weegembump',
+              body: 'Text from the article..',
+              created_at: '2018-05-30T15:59:13.341Z',
+              votes: 0,
+              comment_count: 6
+            }
+          ] }
+        })
+      })
+  })
+  test("returns 200 status code and stays returns updated object when 'endpoints.json' is updated", () => {
+    return request(app)
+      .get('/api')
+      .expect(200)
+      .then((response) => {
+        const endpointsfile = fs.readFile(`${__dirname}/../endpoints.json`, 'utf8')
+        return Promise.all([response.body, endpointsfile])
+      })
+      .then((promiseArr) => {
+        expect(promiseArr[0]).toEqual(JSON.parse(promiseArr[1]))
       })
   })
 })
