@@ -150,7 +150,6 @@ describe("GET /api", () => {
       .get('/api')
       .expect(200)
       .then((response) => {
-        console.log(response.body['GET /api/articles'].exampleResponse)
         expect(response.body['GET /api']).toEqual({
             description: 'serves up a json representation of all the available endpoints of the api'
         })
@@ -185,8 +184,6 @@ describe("GET /api", () => {
         return Promise.all([response.body, endpointsfile])
       })
       .then((promiseArr) => {
-        console.log(promiseArr[0])
-        console.log(promiseArr[1])
         expect(promiseArr[0]).toEqual(JSON.parse(promiseArr[1]))
       })
   })
