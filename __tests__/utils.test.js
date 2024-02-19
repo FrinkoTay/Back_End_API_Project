@@ -142,3 +142,37 @@ describe("GET TOPICS", () => {
       })
   })
 })
+
+describe("GET /api/articles/:article_id", () => {
+  test("return 200 status with correct article", () => {
+    return request(app)
+      .get('/api/articles/1')
+      .expect(200)
+      .then((response) => {
+        expect(response.body.article_id).toBe(1)
+        expect('author' in response.body).toBe(true)
+        expect('title' in response.body).toBe(true)
+        expect('body' in response.body).toBe(true)
+        expect('topic' in response.body).toBe(true)
+        expect('created_at' in response.body).toBe(true)
+        expect('votes' in response.body).toBe(true)
+        expect('article_img_url' in response.body).toBe(true)
+      })
+  })
+  test("return 404 status with error message if given a valid but non-existent article id", () => {
+    return request(app)
+      .get('/api/articles/9999999')
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe('article does not exist')
+      })
+  })
+  test('return 400 status with error messgae if given an invalid id', () => {
+    return request(app)
+      .get('/api/articles/not-an-id')
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe('Bad request');
+      });
+  });
+})
