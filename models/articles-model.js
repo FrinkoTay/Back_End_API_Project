@@ -16,6 +16,17 @@ exports.selectArticle = (articleId) => {
     })
 }
 
+exports.selectArticleComments = (articleId) => {
+    return db.query(`
+        SELECT * FROM comments
+        WHERE article_id = $1
+        ORDER BY created_at DESC
+    ;`, [articleId])
+    .then((response) => {
+        return response.rows
+    })
+}
+
 exports.selectAllArticles = () => {
     let queryStr = 'SELECT * FROM articles'
     queryStr += ' ORDER BY created_at'
