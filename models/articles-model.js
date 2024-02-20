@@ -53,13 +53,6 @@ exports.countComments = () => {
 }
 
 exports.affixArticleComment = (articleId, post) => {
-    if (!('username' in post && 'body' in post)) {
-        return Promise.reject({
-            status: 400,
-            msg: 'Bad request'
-        })
-    }
-    const dateCreated = new Date()
     return db.query(`
         INSERT INTO comments
             (author, body, article_id)

@@ -414,11 +414,11 @@ describe("POST /api/articles/:article_id/comments", () => {
         expect(response.body.msg).toBe('Bad request');
       })
   })
-  test("return 404 error with error message if input object has wrong", () => {
+  test("return 404 error with error message if input object username does not correspond to a valid user", () => {
     return request(app)
       .post('/api/articles/2/comments')
       .send({
-        username: 3,
+        username:"jimbob",
         body: "I didn't care for this"
       })
       .expect(400)
