@@ -256,4 +256,20 @@ describe("GET /api/articles/:article_id/comments", () => {
         expect(response.body).toBeSorted({ key: "created_at", descending: true})
       })
   })
+  test("return 404 status with error message if given a valid but non-existent article id", () => {
+    return request(app)
+      .get('/api/articles/9999999/comments')
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe('article does not exist')
+      })
+  })
+  test('return 400 status with error messgae if given an invalid id', () => {
+    return request(app)
+      .get('/api/articles/not-an-id/comments')
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe('Bad request');
+      });
+  });
 })
