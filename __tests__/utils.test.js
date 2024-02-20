@@ -252,7 +252,6 @@ describe("GET /api/articles", () => {
       .then((response) => {
         response.body.forEach((article) => {
           if (article.article_id === 1) {
-            console.log(article)
             expect(article.comment_count).toBe(11)
           } else if (article.article_id === 2) {
             expect(article.comment_count).toBe(0)
