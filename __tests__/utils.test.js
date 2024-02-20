@@ -159,19 +159,22 @@ describe("GET /api", () => {
           exampleResponse: { topics: [ { slug: 'football', description: 'Footie!' } ] }
         })
         expect(response.body['GET /api/articles']).toEqual({
-          description: 'serves an array of all articles',
-          queries: [ 'author', 'topic', 'sort_by', 'order' ],
-          exampleResponse: { articles: [
-            {
-              title: 'Seafood substitutions are increasing',
-              topic: 'cooking',
-              author: 'weegembump',
-              body: 'Text from the article..',
-              created_at: '2018-05-30T15:59:13.341Z',
-              votes: 0,
-              comment_count: 6
-            }
-          ] }
+          "description": "serves an array of all articles",
+          "queries": ["author", "topic", "sort_by", "order"],
+          "exampleResponse": {
+            "articles": [
+              {
+                "title": "Seafood substitutions are increasing",
+                "topic": "cooking",
+                "author": "weegembump",
+                "article_id": 1,
+                "created_at": "2018-05-30T15:59:13.341Z",
+                "votes": 0,
+                "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+                "comment_count": 6
+              }
+            ]
+          }
         })
       })
   })
@@ -221,4 +224,60 @@ describe("GET /api/articles/:article_id", () => {
         expect(response.body.msg).toBe('Bad request');
       });
   });
+})
+
+describe("GET /api/articles", () => {
+  test("return 200 status with array of article objects with correct properties", () => {
+    return request(app)
+      .get('/api/articles')
+      .expect(200)
+      .then((response) => {
+        expect(response.body.length).toBe(13)
+        response.body.forEach((articleObj) => {
+          expect(typeof articleObj.author).toBe('string')
+          expect(typeof articleObj.title).toBe('string')
+          expect(typeof articleObj.article_id).toBe('number')
+          expect(typeof articleObj.topic).toBe('string')
+          expect(typeof articleObj.created_at).toBe('string')
+          expect(typeof articleObj.votes).toBe('number')
+          expect(typeof articleObj.article_img_url).toBe('string')
+          expect(typeof articleObj.comment_count).toBe('number')
+        })
+      })
+  })
+  test("return 200 status with array of articles objects with correct comment counts", () => {
+    return request(app)
+      .get('/api/articles')
+      .expect(200)
+      .then((response) => {
+        response.body.forEach((article) => {
+          if (article.article_id === 1) {
+            console.log(article)
+            expect(article.comment_count).toBe(11)
+          } else if (article.article_id === 2) {
+            expect(article.comment_count).toBe(0)
+          } else if (article.article_id === 3) {
+            expect(article.comment_count).toBe(2)
+          }
+      })
+    })
+  })
+  test("return 200 status with array of articles objects sorted by default descending by created_at", () => {
+    return request(app)
+      .get('/api/articles')
+      .expect(200)
+      .then((response) => {
+        expect(response.body).toBeSorted({ key: "created_at", descending: true})
+      })
+  })
+  test("return 200 status with array of articles objects without a body property", () => {
+    return request(app)
+      .get('/api/articles')
+      .expect(200)
+      .then((response) => {
+        response.body.forEach((article) => {
+          expect('body' in article).toBe(false)
+        })
+      })
+  })
 })
