@@ -15,3 +15,14 @@ exports.getArticle = (articleId) => {
         return response.rows
     })
 }
+
+exports.selectArticleComments = (articleId) => {
+    return db.query(`
+        SELECT * FROM comments
+        WHERE article_id = $1
+        ORDER BY created_at DESC
+    ;`, [articleId])
+    .then((response) => {
+        return response.rows
+    })
+}

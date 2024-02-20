@@ -222,3 +222,38 @@ describe("GET /api/articles/:article_id", () => {
       });
   });
 })
+
+describe("GET /api/articles/:article_id/comments", () => {
+  test("return 200 status with array of objects with the correct properties", () => {
+    return request(app)
+      .get('/api/articles/1/comments')
+      .expect(200)
+      .then((response) => {
+        expect(response.body.length).toBe(11)
+        response.body.forEach((comment) => {
+          expect(typeof comment.comment_id).toBe('number')
+          expect(typeof comment.votes).toBe('number')
+          expect(typeof comment.created_at).toBe('string')
+          expect(typeof comment.author).toBe('string')
+          expect(typeof comment.body).toBe('string')
+          expect(typeof comment.article_id).toBe('number')
+        })
+      })
+  })
+  test("return 200 status with empty array for article with no comments", () => {
+    return request(app)
+      .get('/api/articles/2/comments')
+      .expect(200)
+      .then((response) => {
+        expect(response.body).toEqual([])
+      })
+  })
+  test("return 200 status with an array of objects sorted by 'created_at' descending", () => {
+    return request(app)
+      .get('/api/articles/1/comments')
+      .expect(200)
+      .then((response) => {
+        expect(response.body).toBeSorted({ key: "created_at", descending: true})
+      })
+  })
+})
