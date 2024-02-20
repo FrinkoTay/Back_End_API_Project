@@ -343,3 +343,87 @@ describe("GET /api/articles/:article_id/comments", () => {
       })
   })
 })
+
+describe("POST /api/articles/:article_id/comments", () => {
+  test("return 201 status with posted object", () => {
+    return request(app)
+      .post('/api/articles/2/comments')
+      .send({
+        username: "rogersop",
+        body: "This was an interesting read"
+      })
+      .expect(201)
+      .then((response) => {
+        expect(typeof response.body[0].article_id).toBe('number')
+        expect(typeof response.body[0].author).toBe('string')
+        expect(typeof response.body[0].body).toBe('string')
+        expect(typeof response.body[0].comment_id).toBe('number')
+        expect(typeof response.body[0].created_at).toBe('string')
+        expect(typeof response.body[0].votes).toBe('number')
+      })
+  })
+  test("posts the input post to the comments table", () => {
+    return request(app)
+      .post('/api/articles/1/comments')
+      .send({
+        username: "butter_bridge",
+        body: "I didn't care for this"
+      })
+      .expect(201)
+      .then((post) => {
+        return request(app)
+          .get('/api/articles/1/comments')
+          .expect(200)
+          .then((response) => {
+            expect(post.body[0]).toEqual(response.body[0])
+          })
+      })
+  })
+  test("return 404 error with error message if given a valid but non-existent id", () => {
+    return request(app)
+      .post('/api/articles/999/comments')
+      .send({
+        username: "butter_bridge",
+        body: "I didn't care for this"
+      })
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe('article does not exist')
+      })
+  })
+  test("return 400 error with error message if given an invalid id", () => {
+    return request(app)
+      .post('/api/articles/not-an-id/comments')
+      .send({
+        username: "butter_bridge",
+        body: "I didn't care for this"
+      })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe('Bad request');
+      })
+  })
+  test("return 404 error with error message if input object doesn't have required keys", () => {
+    return request(app)
+      .post('/api/articles/2/comments')
+      .send({
+        username: "butter_bridge",
+      })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe('Bad request');
+      })
+  })
+  test("return 404 error with error message if input object has wrong", () => {
+    return request(app)
+      .post('/api/articles/2/comments')
+      .send({
+        username: 3,
+        body: "I didn't care for this"
+      })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe('Bad request');
+      })
+  })
+})
