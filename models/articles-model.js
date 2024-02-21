@@ -51,3 +51,17 @@ exports.countComments = () => {
         return commentCount
     })
 }
+
+exports.affixArticleComment = (articleId, post) => {
+    return db.query(`
+        INSERT INTO comments
+            (author, body, article_id)
+        VALUES
+            ($1, $2, $3)
+        RETURNING *
+    ;`, [post.username, post.body, articleId]
+    )
+    .then((response) => {
+        return response.rows
+    })
+}
