@@ -447,7 +447,7 @@ describe("PATCH /api/articles/:article_id", () => {
         expect(typeof response.body.article_img_url).toBe('string')
       })
   })
-  test("update the article in the articles table, incrementing the votes", () => {
+  test("returned article is equal to the updated article", () => {
     return request(app)
       .patch('/api/articles/1')
       .send({
@@ -463,7 +463,26 @@ describe("PATCH /api/articles/:article_id", () => {
           })
       })
   })
-    test("return 404 error with error message if given a valid but non-existent id", () => {
+  test("updates votes by inc_votes on input object", () => {
+    return request(app)
+      .get('/api/articles/2')
+      .then((articleBefore) => {
+        return request(app)
+          .patch('/api/articles/2')
+          .send({
+            inc_votes: 20
+          })
+          .expect(200)
+          .then((article) => {
+            return request(app)
+              .get('/api/articles/2')
+              .then((articleAfter) => {
+                expect(articleAfter.body.votes).toBe(articleBefore.body.votes + 20)
+              })
+          })
+      })
+  })
+  test("return 404 error with error message if given a valid but non-existent id", () => {
     return request(app)
       .patch('/api/articles/999')
       .send({
