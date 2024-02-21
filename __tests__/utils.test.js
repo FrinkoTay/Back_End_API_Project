@@ -427,3 +427,107 @@ describe("POST /api/articles/:article_id/comments", () => {
       })
   })
 })
+    
+describe("PATCH /api/articles/:article_id", () => {
+  test("return 200 status with the updated article", () => {
+    return request(app)
+      .patch('/api/articles/2')
+      .send({
+        inc_votes: 5
+      })
+      .expect(200)
+      .then((response) => {
+        expect(typeof response.body.article_id).toBe('number')
+        expect(typeof response.body.author).toBe('string')
+        expect(typeof response.body.body).toBe('string')
+        expect(typeof response.body.topic).toBe('string')
+        expect(typeof response.body.created_at).toBe('string')
+        expect(typeof response.body.votes).toBe('number')
+        expect(typeof response.body.title).toBe('string')
+        expect(typeof response.body.article_img_url).toBe('string')
+      })
+  })
+  test("returned article is equal to the updated article", () => {
+    return request(app)
+      .patch('/api/articles/1')
+      .send({
+        inc_votes: -200
+      })
+      .expect(200)
+      .then((post) => {
+        return request(app)
+          .get('/api/articles/1')
+          .expect(200)
+          .then((response) => {
+            expect(post.body).toEqual(response.body)
+          })
+      })
+  })
+  test("updates votes by inc_votes on input object", () => {
+    return request(app)
+      .get('/api/articles/2')
+      .then((articleBefore) => {
+        return request(app)
+          .patch('/api/articles/2')
+          .send({
+            inc_votes: 20
+          })
+          .expect(200)
+          .then((article) => {
+            return request(app)
+              .get('/api/articles/2')
+              .then((articleAfter) => {
+                expect(articleAfter.body.votes).toBe(articleBefore.body.votes + 20)
+              })
+          })
+      })
+  })
+  test("return 404 error with error message if given a valid but non-existent id", () => {
+    return request(app)
+      .patch('/api/articles/999')
+      .send({
+        inc_votes: 5
+            })
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe('article does not exist')
+      })
+  })
+  test("return 400 error with error message if given an invalid id", () => {
+    return request(app)
+          .patch('/api/articles/not-an-id')
+      .send({
+        inc_votes: -10
+           })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe('Bad request');
+      })
+  })
+  test("return 400 error with error message if input object doesn't have required keys", () => {
+    return request(app)
+      .patch('/api/articles/2')
+      .send({})
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe('Bad request');
+      })
+  })
+  test("return 400 error with error message if input object inc_votes is not a number", () => {
+    return request(app)
+      .patch('/api/articles/2')
+      .send({
+        inc_votes: "oops"
+        })
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe('Bad request');
+      })
+  })
+})
+      
+      
+      
+      
+      
+      
