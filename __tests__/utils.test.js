@@ -571,4 +571,42 @@ describe("GET /api/users", () => {
   })
   // error testing for non-existent or misspelt endpoint unnecessary:
   // already completed in "GET /api/topics" tests
+})  
+  
+describe("GET /api/articles (topic query)", () => {
+  test("return 200 status with array of all articles with given topic", () => {
+    return request(app)
+      .get('/api/articles?topic=mitch')
+      .expect(200)
+      .then((response) => {
+        expect(response.body.length).toBe(12)
+        response.body.forEach((article) => {
+          expect(article.topic).toBe('mitch')
+        })
+      })
+  })
+  test("still returns articles descending by time created", () => {
+    return request(app)
+      .get('/api/articles?topic=mitch')
+      .expect(200)
+      .then((response) => {
+        expect(response.body).toBeSorted({ key: "created_at", descending: true})
+      })
+  })
+  test("return 404 status with error message if topic does not exist", () => {
+    return request(app)
+      .get('/api/articles?topic=balloons')
+      .expect(404)
+      .then((response) => {
+        console.log(response.body)
+      })
+  })
+  test("return 200 status with empty array if topic exists but no articles have that topic", () => {
+    return request(app)
+      .get('/api/articles?topic=paper')
+      .expect(200)
+      .then((response) => {
+        expect(response.body).toEqual([])
+      })
+  })
 })

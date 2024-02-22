@@ -1,4 +1,4 @@
-const { selectArticle, selectAllArticles, countComments, selectArticleComments, affixArticleComment, addArticleVotes } = require('../models/articles-model')
+const { selectArticle, selectAllArticles, countComments, selectArticleComments, affixArticleComment, addArticleVotes, checkIsTopic } = require('../models/articles-model')
 
 exports.getArticle = (req, res, next) => {
     const articleId = req.params.article_id
@@ -20,7 +20,7 @@ exports.getArticleComments = (req, res, next) => {
 }
 
 exports.getAllArticles = (req, res, next) => {
-    Promise.all([selectAllArticles(), countComments()])
+    Promise.all([selectAllArticles(req.query), countComments(), checkIsTopic(req.query.topic)])
     .then(([articles, comments]) => {
         articles.forEach((article) => {
             delete article.body
@@ -32,6 +32,7 @@ exports.getAllArticles = (req, res, next) => {
         })
         res.status(200).send(articles)
     })
+    .catch(next)
 }
 
 exports.postArticleComment = (req, res, next) => {

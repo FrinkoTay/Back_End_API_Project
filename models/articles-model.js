@@ -27,11 +27,16 @@ exports.selectArticleComments = (articleId) => {
     })
 }
 
-exports.selectAllArticles = () => {
+exports.selectAllArticles = (queryObj) => {
     let queryStr = 'SELECT * FROM articles'
+    const queryArr = []
+    if (queryObj.topic) {
+        queryStr += ' WHERE topic = $1'
+        queryArr.push(queryObj.topic)
+    }
     queryStr += ' ORDER BY created_at'
     queryStr += ' DESC'
-    return db.query(queryStr)
+    return db.query(queryStr, queryArr)
     .then((response) => {
         return response.rows
     })
@@ -82,4 +87,23 @@ exports.addArticleVotes = (articleId, patchBody) => {
         }
         return response.rows
     })
+}
+
+exports.checkIsTopic = (inputTopic) => {
+    if (inputTopic) {
+        return db.query(`
+            SELECT slug FROM topics
+        ;`)
+        .then((response) => {
+            const topics = response.rows.map((topicObj) => {
+                return topicObj.slug
+            })
+            if (!(topics.includes(inputTopic))) {
+                return Promise.reject({
+                    status: 404,
+                    msg: 'topic queried does not exist'
+                })
+            }
+        })
+    }
 }
