@@ -206,8 +206,25 @@ describe("GET /api/articles/:article_id", () => {
         expect('created_at' in response.body).toBe(true)
         expect('votes' in response.body).toBe(true)
         expect('article_img_url' in response.body).toBe(true)
+        expect(typeof response.body.comment_count).toBe('number')
       })
-  })
+    })
+    test("returns correct comment count for article with many comments", () => {
+      return request(app)
+        .get('/api/articles/1')
+        .expect(200)
+        .then((article) => {
+          expect(article.body.comment_count).toBe(11)
+        })
+    })
+    test("returns correct comment count for article with no comments", () => {
+      return request(app)
+        .get('/api/articles/2')
+        .expect(200)
+        .then((article) => {
+          expect(article.body.comment_count).toBe(0)
+        })
+    })
   test("return 404 status with error message if given a valid but non-existent article id", () => {
     return request(app)
       .get('/api/articles/9999999')
@@ -446,7 +463,7 @@ describe("PATCH /api/articles/:article_id", () => {
           .get('/api/articles/1')
           .expect(200)
           .then((response) => {
-            expect(post.body).toEqual(response.body)
+            expect(post.body.votes).toEqual(response.body.votes)
           })
       })
   })
