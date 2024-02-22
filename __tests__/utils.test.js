@@ -269,22 +269,6 @@ describe("GET /api/articles", () => {
         expect(response.body).toBeSorted({ key: "created_at", descending: true})
       })
   })
-  test("return 404 status with error message if given a valid but non-existent article id", () => {
-    return request(app)
-      .get('/api/articles/9999999/comments')
-      .expect(404)
-      .then((response) => {
-        expect(response.body.msg).toBe('article does not exist')
-      })
-  })
-  test('return 400 status with error messgae if given an invalid id', () => {
-    return request(app)
-      .get('/api/articles/not-an-id/comments')
-      .expect(400)
-      .then((response) => {
-        expect(response.body.msg).toBe('Bad request');
-      });
-  });
   test("return 200 status with array of articles objects without a body property", () => {
     return request(app)
       .get('/api/articles')
@@ -325,6 +309,9 @@ describe("GET /api/articles/:article_id/comments", () => {
   test("return 200 status with an array of objects sorted by 'created_at' descending", () => {
     return request(app)
       .get('/api/articles/1/comments')
+      .then((response) => {
+        expect(response.body).toBeSorted({ key: "created_at", descending: true})
+      })
   })
     test("return 404 status with error message if given a valid but non-existent article id", () => {
     return request(app)
@@ -525,9 +512,21 @@ describe("PATCH /api/articles/:article_id", () => {
       })
   })
 })
-      
-      
-      
-      
-      
-      
+
+describe("GET /api/users", () => {
+  test('returns 200 status with array of user objects with correct keys', () => {
+    return request(app)
+      .get('/api/users')
+      .expect(200)
+      .then((response) => {
+        expect(response.body.length).toBe(4)
+        response.body.forEach((user) => {
+          expect(typeof user.username).toBe('string')
+          expect(typeof user.name).toBe('string')
+          expect(typeof user.avatar_url).toBe('string')
+        })
+      })
+  })
+  // error testing for non-existent or misspelt endpoint unnecessary:
+  // already completed in "GET /api/topics" tests
+})
