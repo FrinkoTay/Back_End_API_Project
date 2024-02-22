@@ -269,22 +269,6 @@ describe("GET /api/articles", () => {
         expect(response.body).toBeSorted({ key: "created_at", descending: true})
       })
   })
-  test("return 404 status with error message if given a valid but non-existent article id", () => {
-    return request(app)
-      .get('/api/articles/9999999/comments')
-      .expect(404)
-      .then((response) => {
-        expect(response.body.msg).toBe('article does not exist')
-      })
-  })
-  test('return 400 status with error messgae if given an invalid id', () => {
-    return request(app)
-      .get('/api/articles/not-an-id/comments')
-      .expect(400)
-      .then((response) => {
-        expect(response.body.msg).toBe('Bad request');
-      });
-  });
   test("return 200 status with array of articles objects without a body property", () => {
     return request(app)
       .get('/api/articles')
@@ -325,6 +309,9 @@ describe("GET /api/articles/:article_id/comments", () => {
   test("return 200 status with an array of objects sorted by 'created_at' descending", () => {
     return request(app)
       .get('/api/articles/1/comments')
+      .then((response) => {
+        expect(response.body).toBeSorted({ key: "created_at", descending: true})
+      })
   })
     test("return 404 status with error message if given a valid but non-existent article id", () => {
     return request(app)
@@ -498,7 +485,7 @@ describe("PATCH /api/articles/:article_id", () => {
           .patch('/api/articles/not-an-id')
       .send({
         inc_votes: -10
-           })
+          })
       .expect(400)
       .then((response) => {
         expect(response.body.msg).toBe('Bad request');
@@ -526,6 +513,66 @@ describe("PATCH /api/articles/:article_id", () => {
   })
 })
 
+describe("DELETE /api/comments/:comment_id", () => {
+  test("returns 204 status code and deletes the comment from the database", () => {
+    return request(app)
+      .get('/api/articles/1/comments')
+      .expect(200)
+      .then((commentsBefore) => {
+        return request(app)
+          .delete('/api/comments/2')
+          .expect(204)
+          .then(() => {
+            return request(app)
+              .get('/api/articles/1/comments')
+              .expect(200)
+              .then((commentsAfter) => {
+                // checks a comment has been deleted
+                expect(commentsAfter.body.length).toBe(commentsBefore.body.length - 1)
+                // checks comment 2 has been deleted
+                commentsAfter.body.forEach((comment) => {
+                  expect(comment.comment_id).not.toBe(2)
+                })
+              })
+          })
+      })
+  })
+  test("returns 404 status with error message if given a valid but non-existent id", () => {
+    return request(app)
+      .delete('/api/comments/999')
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe('comment does not exist')
+      })
+  })
+  test("returns 400 status with error message if given an invalid id", () => {
+    return request(app)
+      .delete('/api/comments/not-an-id')
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe('Bad request')
+      })
+  })
+})
+    
+describe("GET /api/users", () => {
+  test('returns 200 status with array of user objects with correct keys', () => {
+    return request(app)
+      .get('/api/users')
+      .expect(200)
+      .then((response) => {
+        expect(response.body.length).toBe(4)
+        response.body.forEach((user) => {
+          expect(typeof user.username).toBe('string')
+          expect(typeof user.name).toBe('string')
+          expect(typeof user.avatar_url).toBe('string')
+        })
+      })
+  })
+  // error testing for non-existent or misspelt endpoint unnecessary:
+  // already completed in "GET /api/topics" tests
+})  
+  
 describe("GET /api/articles (topic query)", () => {
   test("return 200 status with array of all articles with given topic", () => {
     return request(app)
