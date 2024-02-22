@@ -2,9 +2,12 @@ const { selectArticle, selectAllArticles, countComments, selectArticleComments, 
 
 exports.getArticle = (req, res, next) => {
     const articleId = req.params.article_id
-    selectArticle(articleId)
-    .then((response) => {
-        res.status(200).send(response[0])
+    return Promise.all([selectArticle(articleId), countComments()])
+        .then(([article, countArr]) => {
+        if (articleId in countArr) {
+            article[0].comment_count = countArr[articleId]
+        } else { article[0].comment_count = 0 }
+        res.status(200).send(article[0])
     })
     .catch(next)
 }
