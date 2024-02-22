@@ -615,7 +615,7 @@ describe("GET /api/articles (topic query)", () => {
       .get('/api/articles?topic=balloons')
       .expect(404)
       .then((response) => {
-        console.log(response.body)
+        expect(response.body.msg).toEqual("topic queried does not exist")
       })
   })
   test("return 200 status with empty array if topic exists but no articles have that topic", () => {
