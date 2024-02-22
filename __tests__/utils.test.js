@@ -550,4 +550,20 @@ describe("DELETE /api/comments/:comment_id", () => {
           })
       })
   })
+  test("returns 404 status with error message if given a valid but non-existent id", () => {
+    return request(app)
+      .delete('/api/comments/999')
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe('comment does not exist')
+      })
+  })
+  test("returns 400 status with error message if given an invalid id", () => {
+    return request(app)
+      .delete('/api/comments/not-an-id')
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe('Bad request')
+      })
+  })
 })
