@@ -498,7 +498,7 @@ describe("PATCH /api/articles/:article_id", () => {
           .patch('/api/articles/not-an-id')
       .send({
         inc_votes: -10
-           })
+          })
       .expect(400)
       .then((response) => {
         expect(response.body.msg).toBe('Bad request');
@@ -525,9 +525,45 @@ describe("PATCH /api/articles/:article_id", () => {
       })
   })
 })
-      
-      
-      
-      
-      
-      
+
+describe("DELETE /api/comments/:comment_id", () => {
+  test("returns 204 status code and deletes the comment from the database", () => {
+    return request(app)
+      .get('/api/articles/1/comments')
+      .expect(200)
+      .then((commentsBefore) => {
+        return request(app)
+          .delete('/api/comments/2')
+          .expect(204)
+          .then(() => {
+            return request(app)
+              .get('/api/articles/1/comments')
+              .expect(200)
+              .then((commentsAfter) => {
+                // checks a comment has been deleted
+                expect(commentsAfter.body.length).toBe(commentsBefore.body.length - 1)
+                // checks comment 2 has been deleted
+                commentsAfter.body.forEach((comment) => {
+                  expect(comment.comment_id).not.toBe(2)
+                })
+              })
+          })
+      })
+  })
+  test("returns 404 status with error message if given a valid but non-existent id", () => {
+    return request(app)
+      .delete('/api/comments/999')
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe('comment does not exist')
+      })
+  })
+  test("returns 400 status with error message if given an invalid id", () => {
+    return request(app)
+      .delete('/api/comments/not-an-id')
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe('Bad request')
+      })
+  })
+})
