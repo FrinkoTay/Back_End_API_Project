@@ -627,3 +627,74 @@ describe("GET /api/articles (topic query)", () => {
       })
   })
 })
+
+describe("GET /api/articles (sorting queries)", () => {
+  test("returns 200 with array of articles sorted by given column", () => {
+    return request(app)
+      .get('/api/articles?sort_by=title')
+      .expect(200)
+      .then((articles) => {
+        expect(articles.body).toBeSorted({ key: 'title', descending: true })
+      })
+  })
+  test("returns 200 with array of articles sorted ascending", () => {
+    return request(app)
+      .get('/api/articles?order=asc')
+      .expect(200)
+      .then((articles) => {
+        expect(articles.body).toBeSorted({ key: 'created_at', descending: false })
+      })
+  })
+  test("returns 200 with array of articles sorted ascending by given column", () => {
+    return request(app)
+      .get('/api/articles?sort_by=title&order=ASC')
+      .expect(200)
+      .then((articles) => {
+        expect(articles.body).toBeSorted({ key: 'title', descending: false })
+      })
+  })
+  test("returns 200 with array of all articals of a given topic, sorted ascending by given column", () => {
+    return request(app)
+      .get('/api/articles?topic=mitch&sort_by=title&order=ASC')
+      .expect(200)
+      .then((articles) => {
+        expect(articles.body).toBeSorted({ key: 'title', descending: false })
+        expect(articles.body.length).toBe(12)
+        articles.body.forEach((article) => {
+          expect(article.topic).toBe('mitch')
+        })
+      })
+  })
+  test("returns 200 with array of articles sorted by comment_count descending", () => {
+    return request(app)
+      .get('/api/articles?sort_by=comment_count')
+      .expect(200)
+      .then((articles) => {
+        expect(articles.body).toBeSorted({ key: 'comment_count', descending: true })
+      })
+  })
+  test("returns 200 with array of articles sorted by comment_count ascending", () => {
+    return request(app)
+      .get('/api/articles?sort_by=comment_count&order=asc')
+      .expect(200)
+      .then((articles) => {
+        expect(articles.body).toBeSorted({ key: 'comment_count', descending: false })
+      })
+  })
+  test("return 404 status with error message if sort_by column does not exist", () => {
+    return request(app)
+      .get('/api/articles?sort_by=balloons')
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toEqual("sort_by column queried does not exist")
+      })
+  })
+  test("return 404 status with error message if order query is not asc or desc", () => {
+    return request(app)
+      .get('/api/articles?order=balloons')
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toEqual("order queried does not exist")
+      })
+  })
+})
