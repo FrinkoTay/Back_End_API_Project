@@ -31,11 +31,21 @@ exports.selectAllArticles = (queryObj) => {
     let queryStr = 'SELECT * FROM articles'
     const queryArr = []
     if (queryObj.topic) {
-        queryStr += ' WHERE topic = $1'
+        queryStr += ` WHERE topic = $1`
         queryArr.push(queryObj.topic)
     }
-    queryStr += ' ORDER BY created_at'
-    queryStr += ' DESC'
+    if (queryObj.sort_by) {
+        if (!['article_id', 'title', 'topic', 'author', 'created_at', 'votes', 'article_img_url'].includes(queryObj.sort_by)) {
+            return Promise.reject({ status: 400, msg: "sort_by column queried does not exist"})
+        }
+        queryStr += ` ORDER BY ${queryObj.sort_by}`
+    } else { queryStr += ' ORDER BY created_at' }
+    if (queryObj.order) {
+        if (!['ASC', 'DESC'].includes(queryObj.order.toUpperCase())) {
+            return Promise.reject({ status: 400, msg: "order queried does not exist"})
+        }
+        queryStr += ` ${queryObj.order}`
+    } else {queryStr += ` DESC`}
     return db.query(queryStr, queryArr)
     .then((response) => {
         return response.rows
